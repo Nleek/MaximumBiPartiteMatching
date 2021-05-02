@@ -1,0 +1,10 @@
+// Author: Olivia Anastassov and Nikki Kirk
+// must be in:
+// FinalProject/Algorithms/MaximumBipartitMatching/UnitTests
+
+// compile all classes
+javac -d ../Classes/ ../*/*.java    
+
+// run Java on txt file, output mbm files for Mathematica viewer
+
+java -cp ../Classes MainMBM ../../Data/MBMTxt/MBMG0.txt ../../Data/GrfMBM/
