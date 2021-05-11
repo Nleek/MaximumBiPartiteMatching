@@ -4,16 +4,22 @@
  * <h2>Also contains methods to read/write from/to a file</h2>
  * @author Olivia Anastassov and Nikki Kirk
  * @version 1.0
- * @since 5/2/2021
+ * @since 5/9/2021
  */
+
+package Src;
 
 import java.util.*;
 import java.io.*;
 public class DGraphEdges{
-    private int nrVertices;
-    private ArrayList<DEdge> edges;
+    public int nrVertices;
+    public int nrLeftVertices;
+    public int nrRightVertices;
+    public ArrayList<DEdge> edges;
+    public int nrEdges;
+    public DEdge[] listOfEdges;
 
-//-------------------------------------
+//------------------------------------- 
 // Constructors 
 //-------------------------------------
     public DGraphEdges(){
@@ -24,10 +30,15 @@ public class DGraphEdges{
         this.nrVertices = nrVertices;
         this.edges = new ArrayList<DEdge>();
     }
-    public DGraphEdges(int nrVertices, ArrayList<DEdge> edges){
+    public DGraphEdges(int nrVertices, DEdge[] listOfEdges){
         this.nrVertices = nrVertices;
-        this.edges = edges;
+        this.listOfEdges = listOfEdges;
     }
+    public DGraphEdges(int nrVertices, int nrEdges){
+        this.nrVertices = nrVertices;
+        this.nrEdges = nrEdges;
+    }
+
 //-------------------------------------
 // Getters
 //-------------------------------------
@@ -41,6 +52,14 @@ public class DGraphEdges{
         return nrVertices;
     }
 
+    /**
+     * Method to return the list of edges in a graph
+     * @return edges
+     */
+    public DEdge[] getEdges(){
+        return listOfEdges;
+    }
+
 //-------------------------------------
 // Setters
 //-------------------------------------
@@ -51,6 +70,30 @@ public class DGraphEdges{
      */
     public void setNrVertices(int nrVertices){
         this.nrVertices = nrVertices;
+    }
+
+    /**
+     * Method used to set the number of vertices on the left 
+     * side of the bipartite graph
+     */
+    public void setNrLeftVertices(int nrLeftVertices){
+        this.nrLeftVertices = nrLeftVertices;
+    }
+
+    /**
+     * Method used to set the number of vertices on the right
+     * side of the bipartite graph
+     */
+    public void setNrRightVertices(int nrRightVertices){
+        this.nrRightVertices = nrRightVertices;
+    }
+
+    /**
+     * Method to set edges in a graph
+     * @param edges
+     */
+    public void setEdges(DEdge[] listOfEdges){
+        this.listOfEdges = listOfEdges;
     }
 
 //-------------------------------------
@@ -66,7 +109,6 @@ public class DGraphEdges{
      */
     public String toString(){
         String string = "" + nrVertices;
-        boolean firstElem = true;
         for(DEdge edge : edges){
             string += "\n" + (edge.getVertex1()) + " " + (edge.getVertex2());
         }
@@ -95,12 +137,11 @@ public class DGraphEdges{
     }
 
     /**
-     * Method used to pring the graph to the console
+     * Method used to print the graph to the console
      */
     public void printDGraph(){
         System.out.println(this.toString());
     }
-
 
     /**
      * Method used to parse data from a not-perfectly-formatted text file
@@ -115,7 +156,7 @@ public class DGraphEdges{
             }
             else{
                 String[] tokens = line.split(" ");
-                if (tokens.length>0){
+                if (tokens.length > 0){
                     return line;
                 }
             }
@@ -124,7 +165,7 @@ public class DGraphEdges{
     }
 
     /**
-     * 
+     * Method used to parse the number of vertices in the graph
      * @param line - current line to parse as a string
      * @param myReader - scanner
      * @return - returns number of vertices as a string
@@ -137,10 +178,20 @@ public class DGraphEdges{
             // must close the file 
             myReader.close();
             return "";
-        }
-        String[] nrVertsStringList = line.split(" "); 
-        int nrV=Integer.parseInt(nrVertsStringList[0]);
+        } 
+        // Set left-hand vertices
+        int nrLeftVertices = Integer.parseInt(line);
+        this.setNrLeftVertices(nrLeftVertices);
+
+        // Set Right hand vertices
+        line = myReader.nextLine();
+        int nrRightVertices = Integer.parseInt(line);
+        this.setNrRightVertices(nrRightVertices);
+
+        // Set total number of vertices
+        int nrV = nrLeftVertices + nrRightVertices;
         this.setNrVertices(nrV);
+
         line = myReader.nextLine();
         line = skipEmptyLines(line, myReader); 
         return line;
@@ -153,8 +204,7 @@ public class DGraphEdges{
     private void parseFile(Scanner myReader){
         // The first line has the number of nrVertices
         String line = myReader.nextLine();
-        line = parseNrVerts(line,myReader); 
-
+        line = parseNrVerts(line, myReader); 
         if (line.length() == 0){
             // reached the end of file without edges 
             // must init the graph as empty, somehow 
@@ -166,13 +216,31 @@ public class DGraphEdges{
         // Now attempt to process the edges
         // Next lines till the end of file is one edge per line
         int nrEdges = 0;
+        nrEdges++;
+        String[] edgeString = line.split(" ");
+        System.out.println(line);
+        String u = edgeString[0];
+        String v = edgeString[1];
+        addEdge(Integer.parseInt(u), Integer.parseInt(v), 1); 
+        line = myReader.nextLine();
+
         while (myReader.hasNextLine()){
             nrEdges++;
-            String[] edgeString = line.split(" ");
-            String u = edgeString[0];
-            String v = edgeString[1];
+            edgeString = line.split(" ");
+            System.out.println(line);
+            u = edgeString[0];
+            v = edgeString[1];
             addEdge(Integer.parseInt(u), Integer.parseInt(v), 1); 
             line = myReader.nextLine();
+        }
+        
+        if(line.length() != 0){
+            nrEdges++;
+            edgeString = line.split(" ");
+            System.out.println(line);
+            u = edgeString[0];
+            v = edgeString[1];
+            addEdge(Integer.parseInt(u), Integer.parseInt(v), 1); 
         }
     }
 
@@ -183,7 +251,6 @@ public class DGraphEdges{
 //      writeToTextFile
 //      writeToMathematicaFile 
 //------------------------------------- 
-
     /**
      * Method used to read data from a text file
      * @param filename - name of the file to read from
@@ -194,8 +261,8 @@ public class DGraphEdges{
             Scanner myReader = new Scanner(graphFile); 
             parseFile(myReader);
             myReader.close();
-        }      
-        catch (FileNotFoundException e) {
+        }   
+        catch(FileNotFoundException e){
             System.out.println("ERROR: DGraphEdges, readFromTxtFile: file not found.");
             e.printStackTrace();
         }    
@@ -206,12 +273,12 @@ public class DGraphEdges{
      * @param filename - name of the file to write to
      */
     public void writeToTextFile(String filename){
-        try {
+        try{
             FileWriter myWriter = new FileWriter(filename); 
             myWriter.write(toString());
             myWriter.close();
-        }
-        catch (IOException e) { 
+        } 
+        catch(IOException e) { 
             System.out.println("An error occurred."); 
             e.printStackTrace();
         } 
@@ -227,7 +294,7 @@ public class DGraphEdges{
             myWriter.write(toMathString()); 
             myWriter.close();
         } 
-        catch (IOException e){ 
+        catch(IOException e){ 
             System.out.println("An error occurred."); 
             e.printStackTrace();
         } 
@@ -256,7 +323,6 @@ public class DGraphEdges{
     public void addEdge(int u, int v, int weight){
         this.edges.add(new DEdge(u,v,weight));
     }
-
 //------------------------------------- 
 // Converters 
 //------------------------------------- 
@@ -267,13 +333,9 @@ public class DGraphEdges{
      * @return - graph as a DGraphMatrix
      */
     public DGraphMatrix toMatrix(){
-        DGraphMatrix dGraphMatrix = new DGraphMatrix(nrVertices);
-
+        DGraphMatrix dGraphMatrix = new DGraphMatrix(nrVertices, nrLeftVertices, nrRightVertices);
         for(int i = 0; i < edges.size(); i++){
-            int u = edges.get(i).getVertex1();
-            int v = edges.get(i).getVertex2();
-            int weight = edges.get(i).getWeight();
-            dGraphMatrix.addEdge(u, v, weight);
+            dGraphMatrix.addEdge(edges.get(i).getVertex1(),edges.get(i).getVertex2(), edges.get(i).getWeight());
         }
         return dGraphMatrix;
     } 

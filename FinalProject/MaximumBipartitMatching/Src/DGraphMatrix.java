@@ -7,21 +7,26 @@
  * @since 5/2/2021
  */
 
-import java.util.*;
-import java.io.*;
+package Src;
 
-public class DGraphMatrix{
+import java.util.*;
+
+class DGraphMatrix{
     private int [][] graph;
     private int[][] weights;
     private int nrV;
+    private int nrLeftVertices;
+    private int nrRightVertices;
 
 //------------------------------------- 
 // Constructors 
 //-------------------------------------
-    public DGraphMatrix(int numVert){
+    public DGraphMatrix(int numVert, int nrLeftVertices, int nrRightVertices){
         graph = new int[numVert+2][numVert+2];//add 2 for source and sink
         weights = new int[numVert+2][numVert+2];
         this.nrV = numVert;
+        this.nrLeftVertices = nrLeftVertices;
+        this.nrRightVertices = nrRightVertices;
         for (int i = 0; i < numVert+2; i++) {
             for (int j = 0; j < numVert+2; j++) {
                 weights[i][j] = 0;
@@ -76,14 +81,18 @@ public class DGraphMatrix{
      */
     public ArrayList<Integer> LeftHandSideNodes(){
         ArrayList<Integer> LHSN= new ArrayList<Integer>();
-        for(int i = 0; i< nrV; i++){
+        for(int i = 0; i < nrV; i++){
             boolean isOnLeftSide = false;
-            for(int j = 0; j< nrV; j++){
+            for(int j = 0; j < nrV; j++){
                 if(graph[i][j] == 1){//gets number at the index
                     isOnLeftSide = true;
                 }
-            }if(isOnLeftSide){LHSN.add(i);}
-        }return LHSN;
+            }
+            if(isOnLeftSide){
+                LHSN.add(i);
+            }
+        }
+        return LHSN;
     }
 
     /**
@@ -92,19 +101,22 @@ public class DGraphMatrix{
      */
     public void ConnectToSourceSink(){
         ArrayList<Integer> LHSN = LeftHandSideNodes();
-        for(int i = 0; i<nrV; i++){
-            if(LHSN.contains(i)){addEdge(nrV,i,1);}
-            else{addEdge(i,nrV+1,1);}
+        for(int i = 0; i < nrV; i++){
+            if(LHSN.contains(i)){
+                addEdge(nrV, i, 1);
+            }
+            else{
+                addEdge(i, nrV+1, 1);
+            }
         }
     }
-
+    
 //------------------------------------- 
-// Boolean BFS
+// Algorithms
 //-------------------------------------
 //      BFS
 //      fordFulkerson
 //-------------------------------------
-
     /**
      * Method used to confirm if there is a path from source to sink
      * while also updating parent[] and visited[] 
@@ -112,29 +124,31 @@ public class DGraphMatrix{
      * @return - returns true if there is a path between source and sink
      */
     public MBMDataStructures BFS(MBMDataStructures MBMDS){
-        for(int i = 0; i<graph.length; i++){
+        for(int i = 0; i < graph.length; i++){
             MBMDS.visited[i] = false;
         }
-        LinkedList<Integer> remaining = new LinkedList<Integer>();//verts who's children need to be visited eventually 
+        LinkedList<Integer> remaining = new LinkedList<Integer>(); //verts who's children need to be visited eventually 
         remaining.add(nrV);
         MBMDS.visited[nrV] = true;
         MBMDS.parent[nrV] = -1;
-        while(remaining.size() != 0){//while there are verts who's children need to be visited eventually 
-            int u = remaining.poll();//takes a vert away from the front of the LL
-            for(int i = 0; i<graph.length; i++){
-                if(MBMDS.visited[i] == false && MBMDS.residualGraph[u][i]>0){//the flow part makes sure it flows from source to sink
+        
+        //while there are verts who's children need to be visited eventually
+        while(!remaining.isEmpty()){  
+            int u = remaining.poll(); //takes a vert away from the front of the LL
+            for(int i = 0; i < graph.length; i++){
+                if(MBMDS.visited[i] == false && MBMDS.residualGraph[u][i] > 0){ //the flow part makes sure it flows from source to sink
                     if(i == nrV+1){
                         MBMDS.parent[i] = u;
                         MBMDS.foundPath = true; //found a path from the source to the sink
                         return MBMDS; 
                     }
                     remaining.add(i);
-                    MBMDS.parent[i] = u;//parent of v is u and u is now the parent
+                    MBMDS.parent[i] = u; //parent of v is u and u is now the parent
                     MBMDS.visited[i] = true;
                 } 
             }
         }
-        MBMDS.foundPath = false;//didn't find anything
+        MBMDS.foundPath = false; //didn't find anything
         return MBMDS;
     }
 
@@ -144,7 +158,7 @@ public class DGraphMatrix{
      */
     public MBMDataStructures fordFulkerson(){
         ConnectToSourceSink();
-        MBMDataStructures MBMDS = new MBMDataStructures(nrV);
+        MBMDataStructures MBMDS = new MBMDataStructures(nrV, nrLeftVertices, nrRightVertices);
         for(int i = 0; i < graph.length; i++){
             for(int v = 0; v < graph[i].length; v++){
                 //Initalize the residual graph to our current graph
@@ -152,23 +166,30 @@ public class DGraphMatrix{
             }
         }
 
-        //While there exists a path from source to sink
         MBMDS = BFS(MBMDS);
         while(MBMDS.foundPath){
             int pathFlow = Integer.MAX_VALUE; 
-            for(int v = nrV+1; v != nrV; v = MBMDS.parent[v]){
+            for(int v = nrV + 1; v != nrV; v = MBMDS.parent[v]){
                 int u = MBMDS.parent[v];
-                //Take the smallest value and set it to be path flow
-                pathFlow = Math.min(pathFlow, MBMDS.residualGraph[u][v]); 
+                pathFlow = Math.min(pathFlow, MBMDS.residualGraph[u][v]); //takes smallest value and sets it to be path flow
             }
-            for(int v = nrV+1; v != nrV; v = MBMDS.parent[v]){
+            for(int v = nrV + 1; v != nrV; v = MBMDS.parent[v]){
                 int u = MBMDS.parent[v];
                 MBMDS.residualGraph[u][v] -= pathFlow;
                 MBMDS.residualGraph[v][u] += pathFlow;
             }
             MBMDS.maxFlow += pathFlow;
-            //Updates MBMDS so we don't find the same path again
-            MBMDS = BFS(MBMDS);
+            MBMDS = BFS(MBMDS); //updates MBMDS so we don't find the same path again
+        }
+        for(int i = 0; i < nrV; ++i){
+        	for(int j = 0; j < i; ++j){
+        		if(MBMDS.residualGraph[i][j] == 1){
+			        MBMDS.pairs.add(new DEdge(j,i));
+                }
+			  // only edges that will remain in the residual graph will be the final
+			  // edges - they will have 1 on them, therefore we can add them to the
+			  // output arraylist (pairs) to print out
+            }
         }
         return MBMDS;
     }
@@ -178,7 +199,6 @@ public class DGraphMatrix{
 //-------------------------------------
 //      toString
 //-------------------------------------
-
     /**
      * Method used to convert matrix to a string representation
      * @return matrix as a string
@@ -203,7 +223,9 @@ public class DGraphMatrix{
         }
         return output.toString();
     }
+
     
+
     /**
      * Method used to print the matrix to the console
      */

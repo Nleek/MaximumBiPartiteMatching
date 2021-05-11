@@ -6,78 +6,55 @@
  * @since 5/2/2021
  */
 
+package Src;
+
 import java.util.*;
 import java.io.*;
 
 public class MBMDataStructures{
     private int nrV;
+    public int nrLeftVertices;
+    public int nrRightVertices;
     public int [] parent;
     public boolean [] visited;
     public int maxFlow;
     public int [][] residualGraph;//residualGraph
     public boolean foundPath;
+    public ArrayList<DEdge> pairs;
+    
     final static boolean DEBUG = false;
 
 //------------------------------------- 
 // Constructors 
 //-------------------------------------
-    public MBMDataStructures(int nrV){
-        this.nrV = nrV;
-        this.parent = new int [nrV+2];
-        this.visited = new boolean[nrV+2];
-        this.maxFlow = 0;
-        this.residualGraph = new int [nrV+2][nrV+2];
-        this.foundPath = false;
-    }
+public MBMDataStructures(int nrV, int nrLeftVertices, int nrRightVertices){
+    this.nrV = nrV;
+    this.nrLeftVertices = nrLeftVertices;
+    this.nrRightVertices = nrRightVertices;
+    this.parent = new int [nrV+2];
+    this.visited = new boolean[nrV+2];
+    this.maxFlow = 0;
+    this.residualGraph = new int [nrV+2][nrV+2];
+    this.foundPath = false;
+    this.pairs = new ArrayList<DEdge>();
+}
 
-//------------------------------------- 
-// Utility/Printing
 //-------------------------------------
-//      toMathId
-//      printDebug
-//      printArrayInt
-//      printArrayBoolean
+// Getters
 //-------------------------------------
-    /**
-     * Method used to convert to indexing beginning with 1
-     * (Used for the purposes of Mathematica)
-     * @param n - int to convert
-     * @return - returns int + 1
-     */
-    public static int toMathId(int n){
-        return n+1;
+//      getPairs
+//-------------------------------------
+    public ArrayList<DEdge> getPairs(){
+        return this.pairs;
     }
 
-    /**
-     * Method used to print debugging statement to the console
-     * @param message - statement as a string
-     */
-    public static void printDebug(String message){
-        if(DEBUG){
-            System.out.println(message);
-        }
-    }
-
-    /**
-     * Method used to print int array to a Mathematica compatible array
-     * @param array - the array to convert
-     */
-    public static void printArrayInt(int [] array){
-        for(int i = 0; i < array.length; i++){
-            printDebug(""+ toMathId(i)+ ": " + array[i]);
-        }
-    }
-
-    /**
-     * Method used to convert boolean array to a Mathematica compatible array
-     * @param array - the array to convert
-     */
-    public static void printArrayBoolean(boolean [] array){
-        for(int i = 0; i<array.length; i++){
-            printDebug("" + toMathId(i) + ": " + array[i]);
-        }
-    }
-
+//-------------------------------------
+// Serialization and Print
+//-------------------------------------
+//      printResidual
+//      MaxFlowToString
+//      toMathematica
+//-------------------------------------
     /**
      * Method used to print the residualGraph created
      * by running the fordFulkerson method
@@ -96,9 +73,35 @@ public class MBMDataStructures{
      * @return - maxFlow as a string
      */
     public String maxFlowToString(){
-        StringBuilder output = new StringBuilder();
-        output.append(maxFlow);
-        return output.toString();
+        String output = "";
+        for(int i = 0; i < pairs.size(); i++){
+            output = output + pairs.get(i).getVertex1() + " " + pairs.get(i).getVertex2();
+            output = output + "\n";
+        }
+        return output;
+    }
+
+    /**
+     * Method used to print the maxFlow to a mathamatica file
+     * @return
+     */
+    public String toMathematica(){
+        String output = "";
+        output = output + "{" + "\n";
+ 
+        for(int i = 0; i < pairs.size(); i++){
+            output = output + "{" + pairs.get(i).getVertex1() + " " + pairs.get(i).getVertex2() + "},";
+            output = output + "\n";
+        }
+        output = output + "}";
+        return output.replaceAll(",\n}", "\n}");
+    }
+
+    /**
+     * Method used to print the max flow as a string
+     */
+    public void printMaxFlow(){
+        System.out.print(maxFlowToString());
     }
 
 //-------------------------------------
@@ -113,7 +116,7 @@ public class MBMDataStructures{
     public void writeMBMToMathematicaFile(String filename){
     try {
         FileWriter myWriter = new FileWriter(filename); 
-        myWriter.write(maxFlowToString());
+        myWriter.write(toMathematica());
         myWriter.close();
     } 
     catch (IOException e) { 

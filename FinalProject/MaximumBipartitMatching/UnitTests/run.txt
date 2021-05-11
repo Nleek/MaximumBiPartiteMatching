@@ -1,10 +1,18 @@
 // Author: Olivia Anastassov and Nikki Kirk
-// must be in:
-// FinalProject/Algorithms/MaximumBipartitMatching/UnitTests
 
-// compile all classes
-javac -d ../Classes/ ../*/*.java    
+// In order to run the program, go to:
+FinalProject/Algorithms/MaximumBipartitMatching/UnitTests
 
-// run Java on txt file, output mbm files for Mathematica viewer
+// Compile all of the classes:
+javac -d ../Classes/ ../Src/*.java 
 
-java -cp ../Classes MainMBM ../../Data/MBMTxt/MBMG0.txt ../../Data/GrfMBM/
+// Possible programs to run:
+// arg[0] = the graph input directory
+// arg[1] = the graphical graph input directory
+// arg[2] = the directory where the program outputs the Mathematica file
+
+java -cp ../Classes MainMBM ../../Data/MBMTxt/MBMG0.txt ../../Data/MBMGraphicsTxt/MBMGG0.txt ../../Data/GrfMBM/
+java -cp ../Classes MainMBM ../../Data/MBMTxt/MBMG1.txt ../../Data/MBMGraphicsTxt/MBMGG1.txt ../../Data/GrfMBM/
+java -cp ../Classes MainMBM ../../Data/MBMTxt/MBMG2.txt ../../Data/MBMGraphicsTxt/MBMGG2.txt ../../Data/GrfMBM/
+java -cp ../Classes MainMBM ../../Data/MBMTxt/MBMG3.txt ../../Data/MBMGraphicsTxt/MBMGG3.txt ../../Data/GrfMBM/
+java -cp ../Classes MainMBM ../../Data/MBMTxt/MBMG4.txt ../../Data/MBMGraphicsTxt/MBMGG4.txt ../../Data/GrfMBM/
